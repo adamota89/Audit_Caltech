@@ -20,7 +20,17 @@ namespace Caltec.StudentInfoProject.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-          
+
+            modelBuilder.Entity<Student>()
+                .HasMany(s => s.Fees)
+                .WithOne(f => f.Student)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Student>()
+                  .HasOne(s => s.Class)
+                  .WithMany(c => c.Students)
+                  .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
    

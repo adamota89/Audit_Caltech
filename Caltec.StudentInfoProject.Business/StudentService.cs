@@ -140,15 +140,15 @@ namespace Caltec.StudentInfoProject.Business
 
         public async Task DeleteStudentAsync(long Id, CancellationToken cancellationToken)
         {
-            var student = await StudentInfoDbContext.Students.FindAsync(Id);
-
+            var student = await StudentInfoDbContext.Students
+                .Include(s => s.Fees)
+                .FirstOrDefaultAsync(s => s.Id == Id, cancellationToken);
             if (student == null)
             {
                 throw new NotFoundException("Student not found");
             }
-            StudentInfoDbContext.Students.RemoveRange(StudentInfoDbContext.Students.ToList());
-            StudentInfoDbContext.StudentClasses.RemoveRange(StudentInfoDbContext.StudentClasses.ToList());
-            StudentInfoDbContext.SchoolFees.RemoveRange(StudentInfoDbContext.SchoolFees.ToList());
+            // Supprime uniquement l'étudiant
+            StudentInfoDbContext.Students.Remove(student);
             await StudentInfoDbContext.SaveChangesAsync(cancellationToken);
         }
     }
