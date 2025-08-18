@@ -81,7 +81,10 @@ namespace Caltec.StudentInfoProject.Business
 
         public async Task<StudentDto> GetOne(long Id, CancellationToken cancellationToken)
         {
-            var student = await StudentInfoDbContext.Students.Include(x => x.Class).FirstOrDefaultAsync(x => x.Id == Id, cancellationToken);
+            var student = await StudentInfoDbContext.Students
+                .Include(s => s.Fees)
+                .Include(x => x.Class)
+                .FirstOrDefaultAsync(x => x.Id == Id, cancellationToken);
 
             if (student == null)
             {
