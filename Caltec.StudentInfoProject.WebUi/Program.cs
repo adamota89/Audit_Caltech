@@ -4,8 +4,6 @@ using Caltec.StudentInfoProject.Persistence.Initializer;
 using Caltec.Dependency;
 using Microsoft.EntityFrameworkCore;
 
-string connectionString = @"Server=.\SQLExpress;Database=AppCustomerDiiageDbe;Trusted_Connection=Yes;";
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,13 +15,13 @@ builder.Services.AddTransient<DegreeService>();
 builder.Services.AddDbContext<StudentInfoDbContext>(
             options =>
             {
-                options.UseSqlServer(connectionString, o => o.EnableRetryOnFailure());
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), o => o.EnableRetryOnFailure());
 
             }, ServiceLifetime.Transient);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddCalTechDependency(connectionString);
+builder.Services.AddCalTechDependency(builder.Configuration.GetConnectionString("DefaultConnection"));
 
 var app = builder.Build();
 
