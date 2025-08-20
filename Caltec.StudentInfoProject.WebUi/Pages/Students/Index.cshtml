@@ -96,3 +96,27 @@
         }
     </tbody>
 </table>
+
+<div class="pagination">
+    @if (Model.PageNumber > 1)
+    {
+        <a asp-page="./Index" asp-route-pageNumber="@(Model.PageNumber - 1)">⬅️ Précédent</a>
+    }
+
+    <form method="get" asp-page="./Index" >
+        <label for="pageNumber">Aller à la page :</label>
+        <select id="pageNumber" name="pageNumber" onchange="this.form.submit()">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <option value="@i" selected="@(i == Model.PageNumber)">
+                    Page @i
+                </option>
+            }
+        </select>
+    </form>
+
+    @if (Model.HasNextPage)
+    {
+        <a asp-page="./Index" asp-route-pageNumber="@(Model.PageNumber + 1)">Suivant ➡️</a>
+    }
+</div>

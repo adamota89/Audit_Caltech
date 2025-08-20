@@ -14,35 +14,35 @@ namespace Caltec.StudentInfoProject.Business
 
         }
 
-        public async Task<List<StudentDto>> GetStudentsAsync(CancellationToken cancellationToken)
+        /**
+         * Optimisation de cette fonction pour éviter de faire deux fois un foreach qui prend trop de temps
+         */ 
+        public async Task<List<StudentDto>> GetStudentsAsync(CancellationToken cancellationToken, int pageNumber = 1, int pageSize = 10)
         {
-            var students = await StudentInfoDbContext.Students.Include(x => x.Class).ToListAsync(cancellationToken);
+            var students = await StudentInfoDbContext.Students
+                .Include(s => s.Class)
+                .Include(s => s.Fees)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(s => new StudentDto
+                {
+                    Id = s.Id,
+                    Address = s.Address,
+                    City = s.City,
+                    ClassId = s.Class != null ? s.Class.Id : 0,
+                    ClassName = s.Class != null ? s.Class.Name : string.Empty,
+                    Country = s.Country,
+                    Email = s.Email,
+                    FirstName = s.FirstName,
+                    LastName = s.LastName,
+                    Phone = s.Phone,
+                    State = s.State,
+                    Zip = s.Zip,
+                    SumOfFees = s.Fees.Sum(f => f.Amount) // calculé directement
+                })
+                .ToListAsync(cancellationToken);
 
-            var result = students.Select(s => new StudentDto()
-            {
-                Id = s.Id,
-                Address = s.Address,
-                City = s.City,
-                ClassId = s.Class.Id,
-                Country = s.FirstName,
-                Email = s.Email,
-                FirstName = s.FirstName,
-                LastName = s.LastName,
-                Phone = s.Phone,
-                State = s.State,
-                Zip = s.Zip
-            }).ToList();
-            foreach (var student in result)
-            {
-                var studentClass = await StudentInfoDbContext.StudentClasses.FindAsync(student.ClassId);    
-                student.ClassName = studentClass.Name;
-            }
-
-            foreach (var student in result)
-            {
-                student.SumOfFees = StudentInfoDbContext.SchoolFees.Where(x => x.Student.Id == student.Id).Sum(x => x.Amount);
-            }
-            return result;
+            return students;
         }
 
         public async Task<StudentDto> UpdateAsync(StudentDto StudentToUpdate, CancellationToken cancellationToken)
@@ -154,8 +154,10 @@ namespace Caltec.StudentInfoProject.Business
             StudentInfoDbContext.Students.Remove(student);
             await StudentInfoDbContext.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task<int> GetStudentsnumber()
+        {
+            return await StudentInfoDbContext.Students.CountAsync();
+        }
     }
-
-
-
 }
